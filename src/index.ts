@@ -1,6 +1,7 @@
 import express from 'express';
 import path from 'path';
 
+import { FeedRoutes } from './modules/feed/feed.route';
 import { Database } from './utils/database';
 import { notFoundError, unhandledError } from './utils/middlewares/errorHandler';
 import { parseMultipart } from './utils/middlewares/fileUpload';
@@ -18,6 +19,9 @@ app.use(secureMiddleware);
 app.use(express.json());
 app.use(parseMultipart);
 app.use(userGuard);
+
+// routes
+app.use('/feed', FeedRoutes);
 
 // not found
 app.use(notFoundError);
