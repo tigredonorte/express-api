@@ -8,11 +8,11 @@ const AuthRoutes = express.Router();
 const authController = new AuthController();
 
 // user authentication
-AuthRoutes.post('/login', AuthValidator.login,  errorGuard(authController.login));
-AuthRoutes.post('/signup', AuthValidator.signup, errorGuard(authController.signup));
-AuthRoutes.post('/reset', AuthValidator.email(false), errorGuard(authController.reset));
-AuthRoutes.post('/reset/:hash', AuthValidator.reset, errorGuard(authController.resetPassword));
-AuthRoutes.post('/checkHash/:hash', AuthValidator.email(false), errorGuard(authController.reset));
+AuthRoutes.post('/login', AuthValidator.login, errorGuard(authController.login.bind(authController)));
+AuthRoutes.post('/signup', AuthValidator.signup, errorGuard(authController.signup.bind(authController)));
+AuthRoutes.post('/reset', AuthValidator.email(false), errorGuard(authController.reset.bind(authController)));
+AuthRoutes.post('/reset/:hash', AuthValidator.reset, errorGuard(authController.resetPassword.bind(authController)));
+AuthRoutes.post('/checkHash/:hash', AuthValidator.email(false), errorGuard(authController.reset.bind(authController)));
 AuthRoutes.get('/logout', errorGuard(authController.logout));
 
 export { AuthRoutes };

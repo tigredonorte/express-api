@@ -11,6 +11,10 @@ export const length = config => value => {
   return isValid;
 };
 
+export const equal = (getValue) => (value) => {
+    return value === getValue();
+}
+
 export const email = value =>
   /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/.test(
     value

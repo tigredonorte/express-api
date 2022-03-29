@@ -19,9 +19,9 @@ class Login extends Component {
         valid: false,
         touched: false,
         validators: [required, length({ min: 5 })]
-      },
-      formIsValid: false
-    }
+      }
+    },
+    formIsValid: false
   };
 
   inputChangeHandler = (input, value) => {
