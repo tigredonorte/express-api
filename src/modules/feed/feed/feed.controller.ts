@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { FeedModel, IFeed, PaginateType } from './feed.model';
+import { FeedModel, IFeedInput, PaginateType } from './feed.model';
 interface FeedError {
   error: any;
   message: string;
@@ -19,7 +19,7 @@ export class FeedController {
     }
   }
 
-  async get(req: Request<any>, res: Response<IFeed | FeedError>) {
+  async get(req: Request<any>, res: Response<IFeedInput | FeedError>) {
     try {
       const posts = await this.model.get(req.params.id);
       res.status(200).json(posts);
@@ -28,7 +28,7 @@ export class FeedController {
     }
   }
 
-  async add(req: Request<any>, res: Response<{ data: IFeed } | FeedError>) {
+  async add(req: Request<any>, res: Response<{ data: IFeedInput } | FeedError>) {
     try {
       const post = await this.model.add(req.body);
       res.status(201).json({ data: post });

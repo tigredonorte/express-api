@@ -8,7 +8,7 @@ const FeedRoutes = express.Router();
 const controller = new FeedController();
 
 // feed crud
-FeedRoutes.get('/', errorGuard(controller.list.bind(controller)));
+FeedRoutes.get('/posts', errorGuard(controller.list.bind(controller)));
 FeedRoutes.get('/:id', errorGuard(controller.get.bind(controller)));
 FeedRoutes.post('/', FeedValidator.valid(false), errorGuard(controller.add.bind(controller)));
 FeedRoutes.patch('/:id', FeedValidator.valid(true), errorGuard(controller.edit.bind(controller)));

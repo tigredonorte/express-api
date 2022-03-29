@@ -1,9 +1,17 @@
 import mongoose, { Schema } from 'mongoose';
 
-export interface IFeed {
-  _id?: string;
-  title: string,
-  content: string,
+import { User } from '../../user/user/user.model';
+
+export interface IFeedInput {
+  title: string;
+  content: string;
+  creator: Schema.Types.ObjectId;
+}
+
+interface IFeed extends IFeedInput{
+  _id: string;
+  createdAt: string,
+  updatedAt: string;
 }
 
 const feedSchema = new Schema<IFeed>({
@@ -15,6 +23,13 @@ const feedSchema = new Schema<IFeed>({
     type: String,
     required: true,
   },
+  creator: {
+    type: Schema.Types.ObjectId,
+    ref: User.modelName,
+    required: true,
+  },
+}, {
+  timestamps: true,
 });
 
 export const Feed = mongoose.model('post', feedSchema);
@@ -29,16 +44,17 @@ export class FeedModel {
   itemsPerPage = 3;
   async paginate(page: number): Promise<PaginateType> {
     const where = {};
-    const selectFields = ['title', 'content'];
+    const selectFields: (keyof IFeed)[] = ['title', 'content', 'createdAt'];
     const total = await Feed.countDocuments(where);
     const posts = await Feed.find(where)
       .skip((page - 1) * this.itemsPerPage)
       .limit(this.itemsPerPage)
-      .select(selectFields);
+      .select(selectFields)
+      .populate('creator', ['name']);
     return { posts, total: Math.ceil(total / this.itemsPerPage) };
   }
 
-  async add(post: IFeed): Promise<IFeed> {
+  async add(post: IFeedInput): Promise<IFeed> {
     const p = new Feed(post);
     await p.save();
     return p;
@@ -48,7 +64,7 @@ export class FeedModel {
     return (await Feed.findById(productId)) as IFeed;
   }
 
-  async edit(id: string, post: IFeed): Promise<void> {
+  async edit(id: string, post: IFeedInput): Promise<void> {
     await Feed.updateOne({ _id: id }, { $set: post });
   }
 
