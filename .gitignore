@@ -2,7 +2,5 @@ node_modules
 data
 .eslintcache
 .env
-public/images/products/*
-!public/images/products/.gitkeep
-invoices/*
-!invoices/.gitkeep
+images/*
+!images/.gitkeep
