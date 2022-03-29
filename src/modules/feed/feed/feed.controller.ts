@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { FeedModel, IFeedInput, PaginateType } from './feed.model';
+import { FeedModel, IFeed, PaginateType } from './feed.model';
 interface FeedError {
   error: any;
   message: string;
@@ -22,28 +22,31 @@ export class FeedController {
     }
   }
 
-  async get(req: Request<any>, res: Response<IFeedInput | FeedError>) {
+  async get(req: Request<any>, res: Response<IFeed | FeedError>) {
     try {
-      const posts = await this.model.get(req.params.id);
-      res.status(200).json(posts);
+      const post = await this.model.get(req.params.id);
+      if (post) {
+        post.image = `${req.protocol}://${req.get('host')}/public/images/${post.image}`;
+      }
+      res.status(200).json(post);
     } catch (error) {
       res.status(500).json({ error, message: 'Unable to get post'});
     }
   }
 
-  async add(req: Request<any>, res: Response<{ data: IFeedInput } | FeedError>) {
+  async add(req: Request<any>, res: Response<{ data: IFeed } | FeedError>) {
     try {
-      const post = await this.model.add({ ...req.body, creator: res.locals.user._id });
-      res.status(201).json({ data: post });
+      const data = await this.model.add({ ...req.body, creator: res.locals.user._id });
+      res.status(201).json({ data });
     } catch (error) {
       res.status(500).json({ error, message: 'Unable to create post' });
     }
   }
 
-  async edit(req: Request<any>, res: Response<FeedError>) {
+  async edit(req: Request<any>, res: Response<{ data: IFeed } | FeedError>) {
     try {
-      await this.model.edit(req.params.id, req.body);
-      res.status(204).end();
+      const data = await this.model.edit(req.params.id, req.body);
+      res.status(200).json({ data });
     } catch (error) {
       res.status(500).json({ error, message: 'Unable to alter post'});
     }

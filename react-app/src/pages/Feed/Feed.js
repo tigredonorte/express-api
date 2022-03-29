@@ -84,7 +84,6 @@ class Feed extends Component {
   startEditPostHandler(postId) {
     this.setState((prevState) => {
       const loadedPost = { ...prevState.posts.find((p) => p._id === postId) };
-
       return {
         isEditing: true,
         editPost: loadedPost,
@@ -96,23 +95,23 @@ class Feed extends Component {
     this.setState({ isEditing: false, editPost: null });
   }
 
-  async finishEditHandler(postData) {
+  async finishEditHandler(postData, id) {
     this.setState({
       editLoading: true,
     });
 
     try {
-      const { data } = await FeedService.upsertPost(postData, this.state.editPost);
+      const { data: post } = await FeedService.upsertPost(postData, id);
       this.setState((prevState) => {
-        let updatedPosts = [...prevState.posts];
+        let posts = [...prevState.posts];
         if (prevState.editPost) {
           const postIndex = prevState.posts.findIndex((p) => p._id === prevState.editPost._id);
-          updatedPosts[postIndex] = data;
+          posts[postIndex] = post;
         } else if (prevState.posts.length < 2) {
-          updatedPosts = prevState.posts.concat(data);
+          posts = prevState.posts.concat(post);
         }
         return {
-          posts: updatedPosts,
+          posts,
           isEditing: false,
           editPost: null,
           editLoading: false,
@@ -163,7 +162,7 @@ class Feed extends Component {
           selectedPost={this.state.editPost}
           loading={this.state.editLoading}
           onCancelEdit={() => this.cancelEditHandler()}
-          onFinishEdit={(data) => this.finishEditHandler(data)}
+          onFinishEdit={(data) => this.finishEditHandler(data, this.state.editPost ? this.state.editPost._id : null)}
         />
         <section className="feed__status">
           <form onSubmit={(event) => this.statusUpdateHandler(event)}>

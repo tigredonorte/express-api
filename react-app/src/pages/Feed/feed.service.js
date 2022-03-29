@@ -4,7 +4,7 @@ const baseUrl = `${process.env.REACT_APP_BASE_URL}/feed`;
 export class FeedService {
   static async getPosts(page) {
     const res = await fetch(`${baseUrl}/posts?page=${page}`, {
-      headers: getHeaders()
+      headers: getHeaders(),
     });
     if (res.status !== 200) {
       throw new Error(res.message ? res.message : 'Failed to fetch posts.');
@@ -14,7 +14,7 @@ export class FeedService {
 
   static async get(id) {
     const res = await fetch(`${baseUrl}/posts/${id}`, {
-      headers: getHeaders()
+      headers: getHeaders(),
     });
     if (res.status !== 200) {
       throw new Error('Failed to fetch status');
@@ -22,16 +22,24 @@ export class FeedService {
     return res.json();
   }
 
-  static async upsertPost(postData) {
-    const method = postData._id ? 'PATCH' : 'POST';
-    const res = await fetch(`${baseUrl}/${postData._id ? postData._id : ''}`, {
+  static async upsertPost(postData, id) {
+    const method = id ? 'PATCH' : 'POST';
+
+    const formData = new FormData();
+    for (const i in postData) {
+      formData.append(i, postData[i]);
+    }
+    const res = await fetch(`${baseUrl}/${id ? id : ''}`, {
       method,
-      headers: getHeaders(),
-      body: JSON.stringify(postData),
+      headers: {
+        Accept: 'application/json',
+        Authorization: localStorage.getItem('token'),
+      },
+      body: formData,
     });
 
     if (res.status !== 200 && res.status !== 201) {
-      throw new Error('Creating or editing a post failed!');
+      throw new Error(`${!id ? 'Creating' : 'Editing'} post failed!`);
     }
     return await res.json();
   }

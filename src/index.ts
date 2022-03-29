@@ -12,8 +12,12 @@ import { secureMiddleware } from './utils/middlewares/secureApp';
 Database.init(() => {});
 
 const app = express();
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
 
-app.use(express.static(path.join('public')));
+// static resources
+app.use(express.static(path.join('')));
 
 // handful middlewares
 app.use(secureMiddleware);

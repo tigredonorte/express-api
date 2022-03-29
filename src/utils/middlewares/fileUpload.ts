@@ -13,7 +13,7 @@ export function parseMultipart(req: Request, res: Response, next: NextFunction) 
   req.formidable = form;
   form.parse(req, function (err, fields, files) {
     if (err) {
-      console.log(err);
+      console.error(err);
       return next(err);
     }
 

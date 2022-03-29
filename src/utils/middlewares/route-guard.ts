@@ -4,7 +4,6 @@ import { Token } from '../token';
 
 export const userGuard = async function (req: Request<any>, res: Response<any>, next: NextFunction) {
   const rawUser = req.headers.authorization ? Token.getToken(req.headers.authorization as string) : null;
-  console.log(rawUser);
   res.locals.user = rawUser;
   next();
 };

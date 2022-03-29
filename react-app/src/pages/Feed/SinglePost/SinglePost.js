@@ -24,7 +24,8 @@ class SinglePost extends Component {
         title: post.title,
         author: post.creator.name,
         date: new Date(post.createdAt).toLocaleDateString('en-US'),
-        content: post.content
+        content: post.content,
+        image: post.image,
       });
     } catch (error) {
       console.error(error);

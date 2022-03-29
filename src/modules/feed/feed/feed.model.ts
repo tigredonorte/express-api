@@ -6,9 +6,10 @@ export interface IFeedInput {
   title: string;
   content: string;
   creator: Schema.Types.ObjectId;
+  image?: string;
 }
 
-interface IFeed extends IFeedInput{
+export interface IFeed extends IFeedInput{
   _id: string;
   createdAt: string,
   updatedAt: string;
@@ -20,6 +21,10 @@ const feedSchema = new Schema<IFeed>({
     required: true,
   },
   content: {
+    type: String,
+    required: true,
+  },
+  image: {
     type: String,
     required: true,
   },
@@ -36,7 +41,9 @@ export const Feed = mongoose.model('post', feedSchema);
 
 export interface PaginateType {
   posts: IFeed[];
-  total: number
+  pageCount: number;
+  total: number;
+  itemsPerPage: number;
 };
 
 export class FeedModel {
@@ -51,7 +58,7 @@ export class FeedModel {
       .limit(this.itemsPerPage)
       .select(selectFields)
       .populate('creator', ['name']);
-    return { posts, total: Math.ceil(total / this.itemsPerPage) };
+    return { posts, total, pageCount: Math.ceil(total / this.itemsPerPage), itemsPerPage: this.itemsPerPage };
   }
 
   async add(post: IFeedInput): Promise<IFeed> {
@@ -61,11 +68,11 @@ export class FeedModel {
   }
 
   async get(productId: string): Promise<IFeed> {
-    return (await Feed.findById(productId)) as IFeed;
+    return (await Feed.findById(productId).populate('creator', ['name'])) as IFeed;
   }
 
-  async edit(id: string, post: IFeedInput): Promise<void> {
-    await Feed.updateOne({ _id: id }, { $set: post });
+  async edit(id: string, post: IFeedInput): Promise<IFeed> {
+    return await Feed.findByIdAndUpdate(id, { $set: post }, {new: true}) as IFeed;
   }
 
   async delete(id: string): Promise<void> {
