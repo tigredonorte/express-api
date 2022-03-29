@@ -1,7 +1,6 @@
 export class AuthService {
 
   static async authenticate(authData, method) {
-    console.log(authData);
     const res = await fetch(`${process.env.REACT_APP_BASE_URL}/auth/${method}`, {
       method: 'POST',
       headers: {

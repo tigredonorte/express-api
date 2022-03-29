@@ -11,7 +11,10 @@ export class FeedController {
   model = new FeedModel();
   async list(req: Request<any>, res: Response<PaginateType | FeedError>) {
     try {
-      const page = Number(req.query.page ?? 1).valueOf();
+      let page = Number(req.query.page ?? 1).valueOf();
+      if(page < 1) {
+        page = 1;
+      }
       const data = await this.model.paginate(page);
       res.status(200).json(data);
     } catch (error) {
@@ -30,7 +33,7 @@ export class FeedController {
 
   async add(req: Request<any>, res: Response<{ data: IFeedInput } | FeedError>) {
     try {
-      const post = await this.model.add(req.body);
+      const post = await this.model.add({ ...req.body, creator: res.locals.user._id });
       res.status(201).json({ data: post });
     } catch (error) {
       res.status(500).json({ error, message: 'Unable to create post' });

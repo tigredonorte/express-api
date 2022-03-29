@@ -3,13 +3,14 @@ import { NextFunction, Request, Response } from 'express';
 import { Token } from '../token';
 
 export const userGuard = async function (req: Request<any>, res: Response<any>, next: NextFunction) {
-  const rawUser = req.headers.token ? Token.getToken(req.headers.token as string) : null;
+  const rawUser = req.headers.authorization ? Token.getToken(req.headers.authorization as string) : null;
+  console.log(rawUser);
   res.locals.user = rawUser;
   next();
 };
 
 export const authRouteGuard = (req: Request<any>, res: Response<any>, next: NextFunction) => {
-  if (!res.locals.user) {
+  if (!res.locals.user && req.method !== 'OPTIONS') {
     return res.status(401).json({ msg: 'You must inform user token!' });
   }
   next();

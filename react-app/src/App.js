@@ -15,15 +15,18 @@ import './App.css';
 import { AuthService } from './util/auth.service';
 
 class App extends Component {
-  state = {
-    showBackdrop: false,
-    showMobileNav: false,
-    isAuth: false,
-    token: null,
-    userId: null,
-    authLoading: false,
-    error: null
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      showBackdrop: false,
+      showMobileNav: false,
+      isAuth: false,
+      token: null,
+      userId: null,
+      authLoading: false,
+      error: null
+    };
+  }
 
   componentDidMount() {
     const token = localStorage.getItem('token');

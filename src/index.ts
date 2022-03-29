@@ -6,7 +6,7 @@ import { AuthRoutes } from './modules/user/auth.route';
 import { Database } from './utils/database';
 import { notFoundError, unhandledError } from './utils/middlewares/errorHandler';
 import { parseMultipart } from './utils/middlewares/fileUpload';
-import { userGuard } from './utils/middlewares/route-guard';
+import { authRouteGuard, userGuard } from './utils/middlewares/route-guard';
 import { secureMiddleware } from './utils/middlewares/secureApp';
 
 Database.init(() => {});
@@ -23,7 +23,7 @@ app.use(userGuard);
 
 // routes
 app.use('/auth', AuthRoutes);
-app.use('/feed', FeedRoutes);
+app.use('/feed', authRouteGuard, FeedRoutes);
 
 // not found
 app.use(notFoundError);

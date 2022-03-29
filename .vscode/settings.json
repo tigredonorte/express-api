@@ -4,6 +4,7 @@
         "pnpm",
         "resave",
         "SENDGRID",
-        "thom"
+        "thom",
+        "upsert"
     ]
 }

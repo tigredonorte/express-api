@@ -24,9 +24,7 @@ class Signup extends Component {
         value: '',
         valid: false,
         touched: false,
-        validators: [equal(() => {
-          return this.state.form.password.value;
-        }).bind(this)],
+        validators: [equal(() => this.state.form.password.value).bind(this)],
       },
       name: {
         value: '',

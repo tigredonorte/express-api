@@ -1,37 +1,34 @@
 import React, { Component } from 'react';
 
 import Image from '../../../components/Image/Image';
+import { FeedService } from '../feed.service';
 import './SinglePost.css';
 
 class SinglePost extends Component {
-  state = {
-    title: '',
-    author: '',
-    date: '',
-    image: '',
-    content: ''
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      title: '',
+      author: '',
+      date: '',
+      image: '',
+      content: ''
+    };
+  }
 
-  componentDidMount() {
-    const postId = this.props.match.params.postId;
-    fetch('URL')
-      .then(res => {
-        if (res.status !== 200) {
-          throw new Error('Failed to fetch status');
-        }
-        return res.json();
-      })
-      .then(resData => {
-        this.setState({
-          title: resData.post.title,
-          author: resData.post.creator.name,
-          date: new Date(resData.post.createdAt).toLocaleDateString('en-US'),
-          content: resData.post.content
-        });
-      })
-      .catch(err => {
-        console.log(err);
+  async componentDidMount() {
+    try {
+      const postId = this.props.match.params.postId;
+      const post = await FeedService.get(postId);
+      this.setState({
+        title: post.title,
+        author: post.creator.name,
+        date: new Date(post.createdAt).toLocaleDateString('en-US'),
+        content: post.content
       });
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   render() {
