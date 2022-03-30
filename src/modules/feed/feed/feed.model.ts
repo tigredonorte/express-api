@@ -61,7 +61,8 @@ export class FeedModel {
       .skip((page - 1) * this.itemsPerPage)
       .limit(this.itemsPerPage)
       .select(selectFields)
-      .populate('creator', ['name']);
+      .populate('creator', ['name'])
+      .sort({ updatedAt: 'descending' });
     return { posts, total, pageCount: Math.ceil(total / this.itemsPerPage), itemsPerPage: this.itemsPerPage };
   }
 
@@ -79,7 +80,9 @@ export class FeedModel {
     if (post.image) {
       this.deleteFile(oldPost);
     }
-    return (await Feed.findByIdAndUpdate(oldPost._id, { $set: post }, { new: true })) as IFeed;
+    return (await Feed.findByIdAndUpdate(oldPost._id, { $set: post }, { new: true }).populate('creator', [
+      'name',
+    ])) as IFeed;
   }
 
   async delete(oldPost: IFeed): Promise<void> {

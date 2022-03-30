@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { SocketClass } from '../../../utils/socket';
 
 import { FeedModel, IFeed, PaginateType } from './feed.model';
 interface FeedError {
@@ -34,7 +35,9 @@ export class FeedController {
   async add(req: Request<any>, res: Response<{ data: IFeed } | FeedError>) {
     try {
       const data = await this.model.add({ ...req.body, creator: res.locals.user._id });
-      res.status(201).json({ data });
+      const post = await this.model.get(data._id);
+      SocketClass.emit('posts', 'add', post);
+      res.status(201).json({ data: post });
     } catch (error: any) {
       this.sendError(res, error, 'Unable to create post');
     }
@@ -44,6 +47,7 @@ export class FeedController {
     try {
       const post = await this.isAuthorized(req, res);
       const data = await this.model.edit(post, req.body);
+      SocketClass.emit('posts', 'edit', data);
       res.status(200).json({ data });
     } catch (error: any) {
       this.sendError(res, error, 'Unable to alter post');
@@ -54,6 +58,7 @@ export class FeedController {
     try {
       const post = await this.isAuthorized(req, res);
       await this.model.delete(post);
+      SocketClass.emit('posts', 'delete', { _id: post._id });
       res.status(204).end();
     } catch (error: any) {
       this.sendError(res, error, 'Unable to delete post');

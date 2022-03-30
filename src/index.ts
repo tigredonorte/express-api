@@ -1,3 +1,4 @@
+import { config } from 'dotenv';
 import express from 'express';
 import path from 'path';
 
@@ -7,13 +8,14 @@ import { Database } from './utils/database';
 import { notFoundError, unhandledError } from './utils/middlewares/errorHandler';
 import { parseMultipart } from './utils/middlewares/fileUpload';
 import { authRouteGuard, userGuard } from './utils/middlewares/route-guard';
-import { secureMiddleware } from './utils/middlewares/secureApp';
+import { allowedMethods, secureMiddleware } from './utils/middlewares/secureApp';
+import { SocketClass } from './utils/socket';
 
 Database.init(() => {});
 
 const app = express();
 if (process.env.NODE_ENV !== 'production') {
-    require('dotenv').config();
+  config();
 }
 
 // static resources
@@ -35,4 +37,4 @@ app.use(notFoundError);
 // error handling
 app.use(unhandledError);
 
-app.listen('8080', () => console.log('\nRunning on port 8080\n'));
+new SocketClass(app.listen('8080', () => console.log('\nRunning on port 8080\n'))).init();
