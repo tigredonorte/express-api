@@ -11,7 +11,7 @@ class SinglePost extends Component {
       title: '',
       author: '',
       date: '',
-      image: '',
+      imageUrl: '',
       content: ''
     };
   }
@@ -20,12 +20,11 @@ class SinglePost extends Component {
     try {
       const postId = this.props.match.params.postId;
       const post = await FeedService.get(postId);
+      console.log(post);
       this.setState({
-        title: post.title,
+        ...post,
         author: post.creator.name,
         date: new Date(post.createdAt).toLocaleDateString('en-US'),
-        content: post.content,
-        image: post.image,
       });
     } catch (error) {
       console.error(error);
@@ -40,7 +39,7 @@ class SinglePost extends Component {
           Created by {this.state.author} on {this.state.date}
         </h2>
         <div className="single-post__image">
-          <Image contain imageUrl={this.state.image} />
+          <Image contain imageUrl={this.state.imageUrl} />
         </div>
         <p>{this.state.content}</p>
       </section>

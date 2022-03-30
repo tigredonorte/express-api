@@ -1,4 +1,6 @@
+import fs from 'fs/promises';
 import mongoose, { Schema } from 'mongoose';
+import path from 'path';
 
 import { User } from '../../user/user/user.model';
 
@@ -9,33 +11,36 @@ export interface IFeedInput {
   image?: string;
 }
 
-export interface IFeed extends IFeedInput{
+export interface IFeed extends IFeedInput {
   _id: string;
-  createdAt: string,
+  createdAt: string;
   updatedAt: string;
 }
 
-const feedSchema = new Schema<IFeed>({
-  title: {
-    type: String,
-    required: true,
+const feedSchema = new Schema<IFeed>(
+  {
+    title: {
+      type: String,
+      required: true,
+    },
+    content: {
+      type: String,
+      required: true,
+    },
+    image: {
+      type: String,
+      required: true,
+    },
+    creator: {
+      type: Schema.Types.ObjectId,
+      ref: User.modelName,
+      required: true,
+    },
   },
-  content: {
-    type: String,
-    required: true,
-  },
-  image: {
-    type: String,
-    required: true,
-  },
-  creator: {
-    type: Schema.Types.ObjectId,
-    ref: User.modelName,
-    required: true,
-  },
-}, {
-  timestamps: true,
-});
+  {
+    timestamps: true,
+  }
+);
 
 export const Feed = mongoose.model('post', feedSchema);
 
@@ -44,14 +49,13 @@ export interface PaginateType {
   pageCount: number;
   total: number;
   itemsPerPage: number;
-};
+}
 
 export class FeedModel {
-  
-  itemsPerPage = 3;
+  itemsPerPage = 2;
   async paginate(page: number): Promise<PaginateType> {
     const where = {};
-    const selectFields: (keyof IFeed)[] = ['title', 'content', 'createdAt'];
+    const selectFields: (keyof IFeed)[] = ['title', 'content', 'createdAt', 'image'];
     const total = await Feed.countDocuments(where);
     const posts = await Feed.find(where)
       .skip((page - 1) * this.itemsPerPage)
@@ -71,11 +75,33 @@ export class FeedModel {
     return (await Feed.findById(productId).populate('creator', ['name'])) as IFeed;
   }
 
-  async edit(id: string, post: IFeedInput): Promise<IFeed> {
-    return await Feed.findByIdAndUpdate(id, { $set: post }, {new: true}) as IFeed;
+  async edit(oldPost: IFeed, post: IFeedInput): Promise<IFeed> {
+    if (post.image) {
+      this.deleteFile(oldPost);
+    }
+    return (await Feed.findByIdAndUpdate(oldPost._id, { $set: post }, { new: true })) as IFeed;
   }
 
-  async delete(id: string): Promise<void> {
-    await Feed.deleteOne({ _id: id });
+  async delete(oldPost: IFeed): Promise<void> {
+    this.deleteFile(oldPost);
+    await Feed.deleteOne({ _id: oldPost._id });
+  }
+
+  async deleteFile(oldPost: IFeed) {
+    try {
+      if (oldPost?.image) {
+        await fs.unlink(path.resolve('public', 'images', oldPost.image));
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async isAuthorized(postId: string, creator: string): Promise<IFeed> {
+    const post = await Feed.findOne({ _id: postId, creator });
+    if (!post) {
+      throw new Error('Not Authorized!');
+    }
+    return post;
   }
 }

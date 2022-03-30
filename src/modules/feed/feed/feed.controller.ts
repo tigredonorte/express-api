@@ -17,20 +17,17 @@ export class FeedController {
       }
       const data = await this.model.paginate(page);
       res.status(200).json(data);
-    } catch (error) {
-      res.status(500).json({ error, message: 'Unable to fetch posts'});
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message ?? error, message: 'Unable to fetch posts'});
     }
   }
 
   async get(req: Request<any>, res: Response<IFeed | FeedError>) {
     try {
       const post = await this.model.get(req.params.id);
-      if (post) {
-        post.image = `${req.protocol}://${req.get('host')}/public/images/${post.image}`;
-      }
       res.status(200).json(post);
-    } catch (error) {
-      res.status(500).json({ error, message: 'Unable to get post'});
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message ?? error, message: 'Unable to get post'});
     }
   }
 
@@ -38,26 +35,32 @@ export class FeedController {
     try {
       const data = await this.model.add({ ...req.body, creator: res.locals.user._id });
       res.status(201).json({ data });
-    } catch (error) {
-      res.status(500).json({ error, message: 'Unable to create post' });
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message ?? error, message: 'Unable to create post' });
     }
   }
 
   async edit(req: Request<any>, res: Response<{ data: IFeed } | FeedError>) {
     try {
-      const data = await this.model.edit(req.params.id, req.body);
+      const post = await this.isAuthorized(req, res);
+      const data = await this.model.edit(post, req.body);
       res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).json({ error, message: 'Unable to alter post'});
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message ?? error, message: 'Unable to alter post'});
     }
   }
 
   async delete(req: Request<any>, res: Response<FeedError>) {
     try {
-      await this.model.delete(req.params.id);
+      const post = await this.isAuthorized(req, res);
+      await this.model.delete(post);
       res.status(204).end();
-    } catch (error) {
-      res.status(500).json({ error, message: 'Unable to delete post'});
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message ?? error, message: 'Unable to delete post'});
     }
+  }
+
+  async isAuthorized(req: Request<any>, res: Response<FeedError>): Promise<IFeed> {
+    return await this.model.isAuthorized(req.params.id, res.locals.user._id);
   }
 }

@@ -30,11 +30,15 @@ const POST_FORM = {
 };
 
 class FeedEdit extends Component {
-  state = {
-    postForm: POST_FORM,
-    formIsValid: false,
-    imagePreview: null
-  };
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      postForm: POST_FORM,
+      formIsValid: false,
+      imagePreview: null
+    };
+  }
 
   componentDidUpdate(prevProps, prevState) {
     if (
@@ -59,7 +63,11 @@ class FeedEdit extends Component {
           valid: true
         }
       };
-      this.setState({ postForm: postForm, formIsValid: true });
+      this.setState({ 
+        postForm: postForm,
+        formIsValid: true,
+        imagePreview: this.props.selectedPost ? this.props.selectedPost.imageUrl : null
+      });
     }
   }
 

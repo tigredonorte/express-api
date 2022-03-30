@@ -2,14 +2,21 @@ import { getHeaders } from '../../util/getHeaders';
 
 const baseUrl = `${process.env.REACT_APP_BASE_URL}/feed`;
 export class FeedService {
+
   static async getPosts(page) {
     const res = await fetch(`${baseUrl}/posts?page=${page}`, {
       headers: getHeaders(),
     });
+
     if (res.status !== 200) {
       throw new Error(res.message ? res.message : 'Failed to fetch posts.');
     }
-    return await res.json();
+
+    const data = await res.json();
+    return {
+      ...data, 
+      posts: data.posts.map(FeedService.mapSinglePost)
+    };
   }
 
   static async get(id) {
@@ -19,7 +26,7 @@ export class FeedService {
     if (res.status !== 200) {
       throw new Error('Failed to fetch status');
     }
-    return res.json();
+    return FeedService.mapSinglePost(await res.json());
   }
 
   static async upsertPost(postData, id) {
@@ -27,7 +34,9 @@ export class FeedService {
 
     const formData = new FormData();
     for (const i in postData) {
-      formData.append(i, postData[i]);
+      if (postData[i]) {
+        formData.append(i, postData[i]);
+      }
     }
     const res = await fetch(`${baseUrl}/${id ? id : ''}`, {
       method,
@@ -41,7 +50,7 @@ export class FeedService {
     if (res.status !== 200 && res.status !== 201) {
       throw new Error(`${!id ? 'Creating' : 'Editing'} post failed!`);
     }
-    return await res.json();
+    return FeedService.mapSinglePost(await res.json());
   }
 
   static async deletePost(postId) {
@@ -67,5 +76,12 @@ export class FeedService {
     }
     const resData = await res.json();
     console.log(resData);
+  }
+
+  static mapSinglePost(post) {
+    if (!post.imageUrl) {
+      post.imageUrl = `${process.env.REACT_APP_BASE_URL}/public/images/${post.image}`;
+    }
+    return post;
   }
 }

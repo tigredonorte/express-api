@@ -5,13 +5,15 @@ import { v4 } from 'uuid';
 import { handleInputError } from '../../../utils/middlewares/errorHandler';
 import { isValidFile, moveFile } from '../../../utils/middlewares/fileUpload';
 
+const allowedExtensions = ['jpg', 'png', 'jpeg', 'gif'];
 const moveImg = async(req: Request, res: Response, next: NextFunction) => {
   if (!req.body.image) {
+    delete req.body.image;
     return next();
   }
   const fileName = v4();
   const destinyFolder = 'public/images';
-  const imgName = await moveFile(req.body.image, { fileName, allowedExtensions: ['jpg', 'png', 'jpeg'], destinyFolder });
+  const imgName = await moveFile(req.body.image, { fileName, allowedExtensions, destinyFolder });
   req.body.image = imgName;
   next();
 }
@@ -21,7 +23,7 @@ export class FeedValidator {
   static content = body('content').trim().isLength({ min: 10 }).withMessage('Type at least 10 characters');
   static image = (isEditing: boolean) => body('image').custom((img) => {
     if (img) {
-      return isValidFile(img, ['jpg', 'png', 'jpeg']);
+      return isValidFile(img, allowedExtensions);
     }
     if (!isEditing) {
       throw new Error("You must attach an image!");
