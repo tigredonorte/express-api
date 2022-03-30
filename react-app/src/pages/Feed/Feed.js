@@ -8,7 +8,8 @@ import Paginator from '../../components/Paginator/Paginator';
 import Loader from '../../components/Loader/Loader';
 import ErrorHandler from '../../components/ErrorHandler/ErrorHandler';
 import './Feed.css';
-import { FeedService } from './feed.service';
+import { PostService } from './post.service';
+import { StatusService } from './status.service';
 
 class Feed extends Component {
   constructor(props) {
@@ -26,16 +27,12 @@ class Feed extends Component {
     };
   }
   async componentDidMount() {
-    // try {
-    //   const res = await fetch(`${process.env.REACT_APP_BASE_URL}/feed`);
-    //   if (res.status !== 200) {
-    //     throw new Error('Failed to fetch user status.');
-    //   }
-    //   const resData = await res.json();
-    //   this.setState({ status: resData.status });
-    // } catch (error) {
-    //   this.catchError(error);
-    // }
+    try {
+      const resData = await StatusService.getStatus();
+      this.setState({ status: resData.status });
+    } catch (error) {
+      this.catchError(error);
+    }
 
     this.loadPosts();
   }
@@ -57,7 +54,7 @@ class Feed extends Component {
     }
 
     try {
-      const resData = await FeedService.getPosts(page);
+      const resData = await PostService.getPosts(page);
       this.setState({
         posts: resData.posts,
         totalPosts: resData.total,
@@ -68,11 +65,12 @@ class Feed extends Component {
     }
   }
 
-  statusUpdateHandler(event) {
+  async statusUpdateHandler(event) {
     try {
       event.preventDefault();
-      // FeedService.updateStatus();
+      await StatusService.setStatus(this.state.status);
     } catch (error) {
+      console.log(error);
       this.catchError(error);
     }
   }
@@ -101,7 +99,7 @@ class Feed extends Component {
     });
 
     try {
-      const { data: post } = await FeedService.upsertPost(postData, id);
+      const { data: post } = await PostService.upsertPost(postData, id);
       this.setState((prevState) => {
         let posts = [...prevState.posts];
         if (prevState.editPost) {
@@ -135,7 +133,7 @@ class Feed extends Component {
   async deletePostHandler(postId) {
     try {
       this.setState({ postsLoading: true });
-      await FeedService.deletePost(postId);
+      await PostService.deletePost(postId);
       this.setState((prevState) => {
         const updatedPosts = prevState.posts.filter((p) => p._id !== postId);
         return { posts: updatedPosts, postsLoading: false };

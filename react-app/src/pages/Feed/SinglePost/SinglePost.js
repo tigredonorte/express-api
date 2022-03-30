@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 
 import Image from '../../../components/Image/Image';
-import { FeedService } from '../feed.service';
+import { PostService } from '../post.service';
 import './SinglePost.css';
 
 class SinglePost extends Component {
@@ -19,7 +19,7 @@ class SinglePost extends Component {
   async componentDidMount() {
     try {
       const postId = this.props.match.params.postId;
-      const post = await FeedService.get(postId);
+      const post = await PostService.get(postId);
       console.log(post);
       this.setState({
         ...post,

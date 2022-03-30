@@ -1,10 +1,10 @@
 import { getHeaders } from '../../util/getHeaders';
 
-const baseUrl = `${process.env.REACT_APP_BASE_URL}/feed`;
-export class FeedService {
+const baseUrl = `${process.env.REACT_APP_BASE_URL}/feed/posts`;
+export class PostService {
 
   static async getPosts(page) {
-    const res = await fetch(`${baseUrl}/posts?page=${page}`, {
+    const res = await fetch(`${baseUrl}/?page=${page}`, {
       headers: getHeaders(),
     });
 
@@ -15,18 +15,18 @@ export class FeedService {
     const data = await res.json();
     return {
       ...data, 
-      posts: data.posts.map(FeedService.mapSinglePost)
+      posts: data.posts.map(PostService.mapSinglePost)
     };
   }
 
   static async get(id) {
-    const res = await fetch(`${baseUrl}/posts/${id}`, {
+    const res = await fetch(`${baseUrl}/${id}`, {
       headers: getHeaders(),
     });
     if (res.status !== 200) {
       throw new Error('Failed to fetch status');
     }
-    return FeedService.mapSinglePost(await res.json());
+    return PostService.mapSinglePost(await res.json());
   }
 
   static async upsertPost(postData, id) {
@@ -47,10 +47,18 @@ export class FeedService {
       body: formData,
     });
 
+    const resData = await res.json();
     if (res.status !== 200 && res.status !== 201) {
+      if (res.status === 422) {
+        let msg = '';
+        for (const i in resData.error) {
+          msg += `${resData.error[i].param}: ${resData.error[i].msg}\n\n`;
+        }
+        throw new Error(msg);
+      }
       throw new Error(`${!id ? 'Creating' : 'Editing'} post failed!`);
     }
-    return FeedService.mapSinglePost(await res.json());
+    return PostService.mapSinglePost(resData);
   }
 
   static async deletePost(postId) {
@@ -66,16 +74,6 @@ export class FeedService {
     if (res.status !== 204) {
       throw new Error(res.message || 'Deleting a post failed!');
     }
-  }
-
-  static async updateStatus() {
-    const res = await fetch('URL');
-
-    if (res.status !== 201 && res.status !== 204) {
-      throw new Error("Can't update status!");
-    }
-    const resData = await res.json();
-    console.log(resData);
   }
 
   static mapSinglePost(post) {

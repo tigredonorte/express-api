@@ -18,7 +18,7 @@ export class FeedController {
       const data = await this.model.paginate(page);
       res.status(200).json(data);
     } catch (error: any) {
-      res.status(500).json({ error: error?.message ?? error, message: 'Unable to fetch posts'});
+      this.sendError(res, error, 'Unable to fetch post');
     }
   }
 
@@ -27,7 +27,7 @@ export class FeedController {
       const post = await this.model.get(req.params.id);
       res.status(200).json(post);
     } catch (error: any) {
-      res.status(500).json({ error: error?.message ?? error, message: 'Unable to get post'});
+      this.sendError(res, error, 'Unable to get post');
     }
   }
 
@@ -36,7 +36,7 @@ export class FeedController {
       const data = await this.model.add({ ...req.body, creator: res.locals.user._id });
       res.status(201).json({ data });
     } catch (error: any) {
-      res.status(500).json({ error: error?.message ?? error, message: 'Unable to create post' });
+      this.sendError(res, error, 'Unable to create post');
     }
   }
 
@@ -46,7 +46,7 @@ export class FeedController {
       const data = await this.model.edit(post, req.body);
       res.status(200).json({ data });
     } catch (error: any) {
-      res.status(500).json({ error: error?.message ?? error, message: 'Unable to alter post'});
+      this.sendError(res, error, 'Unable to alter post');
     }
   }
 
@@ -56,11 +56,20 @@ export class FeedController {
       await this.model.delete(post);
       res.status(204).end();
     } catch (error: any) {
-      res.status(500).json({ error: error?.message ?? error, message: 'Unable to delete post'});
+      this.sendError(res, error, 'Unable to delete post');
     }
   }
 
   async isAuthorized(req: Request<any>, res: Response<FeedError>): Promise<IFeed> {
-    return await this.model.isAuthorized(req.params.id, res.locals.user._id);
+    try {
+      return await this.model.isAuthorized(req.params.id, res.locals.user._id);
+    } catch (error: any) {
+      error.status = 403;
+      throw error;
+    }
+  }
+
+  sendError(res: Response<FeedError>, error: any, message: string) {
+    res.status(error.status ?? 500).json({ error: error?.message ?? error, message});
   }
 }
