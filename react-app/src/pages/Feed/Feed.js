@@ -1,7 +1,6 @@
 import './Feed.css';
 
 import React, { Component, Fragment } from 'react';
-import openSocket from 'socket.io-client';
 
 import Button from '../../components/Button/Button';
 import ErrorHandler from '../../components/ErrorHandler/ErrorHandler';
@@ -37,65 +36,6 @@ class Feed extends Component {
     }
 
     this.loadPosts();
-    const socket = openSocket(process.env.REACT_APP_BASE_URL, {
-      extraHeaders: {
-        Authorization: localStorage.getItem('token'),
-      },
-    });
-    socket.on('posts', (event) => {
-      switch (event.action) {
-        case 'add':
-          return this.addPost(event.data);
-
-        case 'edit':
-          return this.editPost(event.data);
-
-        case 'delete':
-          return this.deletePost(event.data);
-        default:
-          break;
-      }
-    });
-  }
-
-  addPost(post) {
-    this.setState((prevState) => {
-      const updatedPosts = [...prevState.posts];
-      if (prevState.postPage === 1) {
-        updatedPosts.pop();
-        updatedPosts.unshift(post);
-      }
-      return {
-        posts: updatedPosts,
-        totalPosts: prevState.totalPosts + 1,
-      };
-    });
-  }
-
-  editPost(post) {
-    this.setState((prevState) => {
-      const index = prevState.posts.findIndex((it) => it._id === post._id);
-      if (index === -1) {
-        return {};
-      }
-      const updatedPosts = [...prevState.posts];
-      updatedPosts[index] = post;
-      return {
-        posts: updatedPosts,
-      };
-    });
-  }
-
-  deletePost(post) {
-    this.setState((prevState) => {
-      const index = prevState.posts.findIndex((it) => it._id === post._id);
-      if (index === -1) {
-        return {};
-      }
-      const posts = [...prevState.posts];
-      posts.splice(index, 1);
-      return { posts };
-    });
   }
 
   async loadPosts(direction) {
@@ -160,7 +100,7 @@ class Feed extends Component {
     });
 
     try {
-      const { data: post } = await PostService.upsertPost(postData, id);
+      const post = await PostService.upsertPost(postData, id);
       this.setState((prevState) => {
         let posts = [...prevState.posts];
         if (prevState.editPost) {

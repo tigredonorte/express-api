@@ -17,8 +17,10 @@
     "bcrypt": "^5.0.1",
     "dotenv": "^16.0.0",
     "express": "^4.17.3",
+    "express-graphql": "^0.12.0",
     "express-validator": "^6.14.0",
     "formidable": "^2.0.1",
+    "graphql": "^16.3.0",
     "jsonwebtoken": "^8.5.1",
     "mime-types": "^2.1.35",
     "mongoose": "^6.2.8",
@@ -26,7 +28,8 @@
     "ramda": "^0.28.0",
     "socket.io": "^4.4.1",
     "typescript": "^4.6.3",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "validator": "^13.7.0"
   },
   "devDependencies": {
     "@swc/core": "^1.2.161",
@@ -36,6 +39,7 @@
     "@types/mime-types": "^2.1.1",
     "@types/node": "^17.0.23",
     "@types/ramda": "^0.28.4",
+    "@types/validator": "^13.7.2",
     "node-dev": "^7.4.1",
     "nodemon": "^2.0.15",
     "ts-node": "^10.7.0",

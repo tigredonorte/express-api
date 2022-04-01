@@ -3,14 +3,22 @@ import { NextFunction, Request, Response } from 'express';
 import { Token } from '../token';
 
 export const userGuard = async function (req: Request<any>, res: Response<any>, next: NextFunction) {
-  const rawUser = req.headers.authorization ? Token.getToken(req.headers.authorization as string) : null;
-  res.locals.user = rawUser;
+  // @ts-ignore
+  req.user = req.headers.authorization ? Token.getToken(req.headers.authorization as string) : null;
   next();
 };
 
+export const auth = (req: Request) => {
+  if (!req.user) {
+    throw new Error(JSON.stringify({ message: 'You must send the authorization header', status: 401 }));
+  }
+  return req.user;
+}
+
 export const authRouteGuard = (req: Request<any>, res: Response<any>, next: NextFunction) => {
-  if (!res.locals.user && req.method !== 'OPTIONS') {
-    return res.status(401).json({ msg: 'You must inform user token!' });
+  // @ts-ignore
+  if (!req.user && req.method !== 'OPTIONS') {
+    return res.status(401).json({ msg: 'You must inform authorization header!' });
   }
   next();
 }

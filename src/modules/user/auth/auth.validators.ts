@@ -1,4 +1,6 @@
 import { body } from 'express-validator';
+import { isEmpty } from 'ramda';
+import validator from 'validator';
 
 import { handleInputError } from '../../../utils/middlewares/errorHandler';
 import { UsersModel } from '../user/user.model';
@@ -46,8 +48,71 @@ export class AuthValidator {
     AuthValidator.password,
     AuthValidator.confirm,
     AuthValidator.userName,
-    handleInputError
+    handleInputError,
   ];
   static login = [AuthValidator.password, AuthValidator.email(false), handleInputError];
   static reset = [AuthValidator.password, AuthValidator.confirm, handleInputError];
+}
+
+export class AuthValidatorModel {
+  private isLogin = false;
+  private errors: { [s: string]: any } = {};
+  public getErrors() {
+    return this.errors;
+  }
+
+  public async isValid(
+    fields: ('email' | 'password' | 'name' | 'confirm_password')[],
+    inputs: any,
+    isLogin: boolean
+  ): Promise<boolean> {
+    this.isLogin = isLogin;
+    await Promise.all(fields.map((field) => this[field](inputs[field], inputs)));
+    return isEmpty(this.errors);
+  }
+
+  private async email(email: string, inputs: any): Promise<boolean> {
+    if (!validator.isEmail(email)) {
+      return this.setError('email', 'Please enter a valid email', email);
+    }
+    if (this.isLogin) {
+      return true;
+    }
+    const user = await userModel.getByEmail(email);
+    if (user) {
+      return this.setError('email', 'Email already exists!', email);
+    }
+    return true;
+  }
+
+  private async password(password: string, inputs: any): Promise<boolean> {
+    if (!validator.isLength(password, { min: 8 })) {
+      return this.setError('password', 'Type at least 8 characters', password);
+    }
+    if (!validator.matches(password, /[a-z]/)) {
+      return this.setError('password', 'must contain a number', password);
+    }
+    if (!validator.matches(password, /\d/)) {
+      return this.setError('password', 'must contain at least one lowercase letter', password);
+    }
+    if (!validator.matches(password, /[A-Z]/)) {
+      return this.setError('password', 'must contain at least one uppercase letter', password);
+    }
+    return true;
+  }
+
+  private async name(name: string, inputs: any): Promise<boolean> {
+    return validator.isEmpty(name) ? this.setError('name', `must contain at least one uppercase letter`, name) : true;
+  }
+
+  private async confirm_password(confirm_password: string, inputs: any): Promise<boolean> {
+    return !validator.equals(inputs.password, confirm_password)
+      ? this.setError('confirm_password', `Password and confirm password must be equals`, confirm_password)
+      : true;
+  }
+
+  private setError(field: string, message: string, value: any) {
+    this.errors[field] = { message, value };
+    return false;
+  }
 }

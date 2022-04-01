@@ -7,7 +7,7 @@ import { User } from '../../user/user/user.model';
 export interface IFeedInput {
   title: string;
   content: string;
-  creator: Schema.Types.ObjectId;
+  creator: Schema.Types.ObjectId | String;
   image?: string;
 }
 

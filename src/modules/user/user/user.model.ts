@@ -56,14 +56,14 @@ export class UsersModel {
     return (await User.exists({ email })) as IUser;
   }
 
-  async add(user: IUserInput): Promise<void> {
+  async add(user: IUserInput): Promise<IUser> {
     const salt = await bcrypt.genSalt(10);
     const password = await bcrypt.hash(user.password as string, salt);
     const u = new User({
       ...user,
       password,
     });
-    await u.save();
+    return await u.save();
   }
 
   async edit(id: string, user: IUserInput): Promise<void> {
@@ -83,8 +83,8 @@ export class UsersModel {
     return await bcrypt.hash(password, salt);
   }
 
-  checkId(productId: string) {
-    if (!productId) {
+  checkId(userId: string) {
+    if (!userId) {
       throw new Error('You must inform the product Id');
     }
   }

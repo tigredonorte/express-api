@@ -28,8 +28,8 @@ export class AuthModel {
     );
   }
 
-  async signup(user: IUser): Promise<void> {
-    await AuthModel.usersModel.add(user);
+  async signup(user: IUser): Promise<IUser> {
+    return await AuthModel.usersModel.add(user);
   }
 
   async signupEmail(user: IUser): Promise<void> {
